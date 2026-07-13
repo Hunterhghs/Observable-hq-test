@@ -5,136 +5,140 @@ toc: false
 
 <div class="page-hero">
   <h1>Regression Diagnostics</h1>
-  <p>Beta convergence, sigma convergence, and club decomposition across three development eras</p>
+  <p>Beta convergence · Sigma convergence · Club decomposition · Growth distributions — across three eras</p>
 </div>
 
-```js
-const data = await FileAttachment("./data/convergence.json").json();
-```
-
-<div class="grid grid-cols-3" style="margin-bottom: 1.5rem;">
-  ${data.metrics.map(m => `
-  <div class="card" style="text-align: center;">
-    <div style="font-size: 1.8rem; font-weight: 800; color: #72d2c0;">${m.era}</div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; margin-top: 0.8rem;">
-      <div><div class="metric-label">β</div><div style="font-weight: 700;">${(m.beta_convergence * 1e6).toFixed(2)}</div></div>
-      <div><div class="metric-label">σ</div><div style="font-weight: 700;">${m.sigma_convergence.toFixed(3)}</div></div>
-      <div><div class="metric-label">CV</div><div style="font-weight: 700;">${m.cv.toFixed(3)}</div></div>
-    </div>
-  </div>
-  `).join("")}
-</div>
+<div class="grid grid-cols-3" style="margin-bottom: 1.5rem;" id="metric-cards"></div>
 
 <div class="grid grid-cols-2">
   <div class="card">
-    <h3 style="margin-top:0;">Beta Convergence: Growth vs Initial GDP</h3>
-    <p style="color: var(--muted); font-size: 0.85rem;">Negative slope = convergence (poorer regions grow faster)</p>
+    <h3>Beta Convergence</h3>
+    <p class="muted">Growth rate vs initial GDP — negative slope = poorer regions grow faster</p>
     <div id="beta-chart"></div>
   </div>
   <div class="card">
-    <h3 style="margin-top:0;">Sigma Convergence: Dispersion Over Time</h3>
-    <p style="color: var(--muted); font-size: 0.85rem;">Declining σ = reduced inequality across regions</p>
+    <h3>Sigma Convergence</h3>
+    <p class="muted">Standard deviation of log GDP — decline = reduced inequality</p>
     <div id="sigma-chart"></div>
   </div>
 </div>
 
 <div class="grid grid-cols-2" style="margin-top: 1.5rem;">
   <div class="card">
-    <h3 style="margin-top:0;">Club Convergence: Within vs Total Variance</h3>
-    <p style="color: var(--muted); font-size: 0.85rem;">Club ratio = within-club variance / total variance</p>
+    <h3>Club Variance Decomposition</h3>
+    <p class="muted">Within-club vs total standard deviation — convergence within tiers</p>
     <div id="club-chart"></div>
   </div>
   <div class="card">
-    <h3 style="margin-top:0;">GDP Growth Distribution</h3>
-    <p style="color: var(--muted); font-size: 0.85rem;">Distribution of growth rates by era — rightward shift = convergence</p>
-    <div id="growth-dist-chart"></div>
+    <h3>Growth Rate Distribution</h3>
+    <p class="muted">Distribution of growth rates by era — rightward shift with convergence</p>
+    <div id="growth-chart"></div>
   </div>
 </div>
 
 ```js
 import * as Plot from "npm:@observablehq/plot";
+const data = await FileAttachment("./data/convergence.json").json();
+const $ = id => document.getElementById(id);
 
-// Beta convergence: each era, growth vs initial GDP
-const betaData = [];
-data.regions.forEach(r => {
-  // Era 0: initial GDP is era 0 GDP, growth is era 0 growth
-  betaData.push({region: r.name, era: r.eras[0].era, initial_gdp: r.eras[0].gdp_per_capita / 1000, growth: r.eras[0].growth_rate * 100, club: r.club});
-  betaData.push({region: r.name, era: r.eras[1].era, initial_gdp: r.eras[1].gdp_per_capita / 1000, growth: r.eras[1].growth_rate * 100, club: r.club});
-  betaData.push({region: r.name, era: r.eras[2].era, initial_gdp: r.eras[2].gdp_per_capita / 1000, growth: r.eras[2].growth_rate * 100, club: r.club});
+// ── Metric cards ──
+const cardsDiv = $("metric-cards");
+data.metrics.forEach(m => {
+  const c = document.createElement("div");
+  c.className = "card";
+  c.style.textAlign = "center";
+  c.innerHTML = `
+    <div style="font-size:1.3rem;font-weight:700;color:#72d2c0;margin-bottom:0.5rem;">${m.era}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3rem;">
+      <div><div class="metric-label">β (×10⁶)</div><span style="font-weight:700;">${(m.beta_convergence * 1e6).toFixed(1)}</span></div>
+      <div><div class="metric-label">σ</div><span style="font-weight:700;">${m.sigma_convergence.toFixed(3)}</span></div>
+      <div><div class="metric-label">CV</div><span style="font-weight:700;">${m.cv.toFixed(3)}</span></div>
+    </div>`;
+  cardsDiv.appendChild(c);
 });
 
-const betaContainer = document.getElementById("beta-chart");
-betaContainer.appendChild(
+// ── Beta Convergence ──
+const betaData = data.regions.flatMap(r =>
+  r.eras.map(e => ({ region: r.name, era: e.era, gdp: e.gdp_per_capita / 1000, growth: e.growth_rate * 100, club: r.club }))
+);
+$("beta-chart").appendChild(
   Plot.plot({
-    width: betaContainer.clientWidth,
-    height: 320,
-    style: { background: "transparent", color: "#c8c8d4" },
-    x: { label: "GDP per capita (thousands $)", grid: true },
-    y: { label: "↑ Growth rate (%)", grid: true },
+    width: $("beta-chart").clientWidth,
+    height: 340,
+    style: { background: "transparent", color: "#c8c8d4", fontSize: "13px" },
+    marginLeft: 55,
+    x: { label: "GDP per capita ($k)", grid: true },
+    y: { label: "Growth rate (%)", grid: true },
     color: { legend: true, label: "Era" },
     marks: [
-      Plot.dot(betaData, {x: "initial_gdp", y: "growth", stroke: "era", fill: "era", opacity: 0.7}),
-      Plot.linearRegressionY(betaData, {x: "initial_gdp", y: "growth", stroke: "era", strokeWidth: 2}),
+      Plot.dot(betaData, { x: "gdp", y: "growth", stroke: "era", fill: "era", fillOpacity: 0.5, r: 4 }),
+      Plot.linearRegressionY(betaData, { x: "gdp", y: "growth", stroke: "era", strokeWidth: 2.5 }),
+      Plot.ruleY([0], { stroke: "#ffffff22" }),
     ]
   })
 );
 
-// Sigma convergence
-const sigmaContainer = document.getElementById("sigma-chart");
-sigmaContainer.appendChild(
+// ── Sigma Convergence ──
+$("sigma-chart").appendChild(
   Plot.plot({
-    width: sigmaContainer.clientWidth,
-    height: 320,
-    style: { background: "transparent", color: "#c8c8d4" },
-    x: { label: "Era" },
-    y: { label: "↑ Sigma (σ)", grid: true },
+    width: $("sigma-chart").clientWidth,
+    height: 340,
+    style: { background: "transparent", color: "#c8c8d4", fontSize: "13px" },
+    marginLeft: 55,
+    x: { label: null, padding: 0.4 },
+    y: { label: "Sigma (σ log GDP)", grid: true },
     marks: [
-      Plot.line(data.metrics, {x: "era", y: "sigma_convergence", stroke: "#ff6b6b", strokeWidth: 3}),
-      Plot.dot(data.metrics, {x: "era", y: "sigma_convergence", fill: "#ff6b6b", r: 6}),
-      Plot.text(data.metrics, {x: "era", y: "sigma_convergence", text: d => d.sigma_convergence.toFixed(3), dy: -15, fill: "#ff6b6b", fontSize: 13, fontWeight: "bold"}),
+      Plot.areaY(data.metrics, { x: "era", y1: d => data.metrics[0].sigma_convergence, y2: "sigma_convergence", fill: "#ff6b6b", fillOpacity: 0.1 }),
+      Plot.line(data.metrics, { x: "era", y: "sigma_convergence", stroke: "#ff6b6b", strokeWidth: 3.5, curve: "catmull-rom" }),
+      Plot.dot(data.metrics, { x: "era", y: "sigma_convergence", fill: "#ff6b6b", r: 8 }),
+      Plot.text(data.metrics, { x: "era", y: "sigma_convergence", text: d => d.sigma_convergence.toFixed(3), dy: -20, fill: "#ff6b6b", fontSize: 16, fontWeight: "bold" }),
       Plot.ruleY([0]),
     ]
   })
 );
 
-// Club convergence
-const clubContainer = document.getElementById("club-chart");
-const clubData = data.metrics.map(m => ({
+// ── Club Variance ──
+const clubDecompData = data.metrics.map(m => ({
   era: m.era,
-  "Within-Club σ²": Math.sqrt(m.within_club_variance) / 1000,
-  "Total σ²": Math.sqrt(m.total_variance) / 1000,
+  "Within-Club": Math.sqrt(m.within_club_variance) / 1000,
+  "Between-Club": (Math.sqrt(m.total_variance) - Math.sqrt(m.within_club_variance)) / 1000,
 }));
-clubContainer.appendChild(
+const clubFlat = clubDecompData.flatMap(d => [
+  { era: d.era, component: "Between-Club", value: d["Between-Club"] },
+  { era: d.era, component: "Within-Club", value: d["Within-Club"] },
+]);
+$("club-chart").appendChild(
   Plot.plot({
-    width: clubContainer.clientWidth,
-    height: 320,
-    style: { background: "transparent", color: "#c8c8d4" },
-    x: { label: "Era" },
-    y: { label: "↑ Standard Deviation (thousands $)", grid: true },
-    color: { legend: true, label: "Component" },
+    width: $("club-chart").clientWidth,
+    height: 340,
+    style: { background: "transparent", color: "#c8c8d4", fontSize: "13px" },
+    marginLeft: 55,
+    x: { label: "Era", padding: 0.3 },
+    y: { label: "Std Dev ($k)", grid: true },
+    color: { legend: true, label: "Component", range: ["#ff6b6b", "#72d2c0"] },
     marks: [
-      Plot.line(clubData, {x: "era", y: "Total σ²", stroke: "#ff6b6b", strokeWidth: 2.5}),
-      Plot.dot(clubData, {x: "era", y: "Total σ²", fill: "#ff6b6b", r: 5}),
-      Plot.line(clubData, {x: "era", y: "Within-Club σ²", stroke: "#72d2c0", strokeWidth: 2.5}),
-      Plot.dot(clubData, {x: "era", y: "Within-Club σ²", fill: "#72d2c0", r: 5}),
+      Plot.barY(clubFlat, { x: "era", y: "value", fill: "component" }),
       Plot.ruleY([0]),
     ]
   })
 );
 
-// Growth distribution by era
-const growthDistContainer = document.getElementById("growth-dist-chart");
-const growthData = data.regions.flatMap(r => r.eras.map(e => ({era: e.era, growth: e.growth_rate * 100})));
-growthDistContainer.appendChild(
+// ── Growth Distribution ──
+const growthData = data.regions.flatMap(r =>
+  r.eras.map(e => ({ era: e.era, growth: e.growth_rate * 100, region: r.name }))
+);
+$("growth-chart").appendChild(
   Plot.plot({
-    width: growthDistContainer.clientWidth,
-    height: 320,
-    style: { background: "transparent", color: "#c8c8d4" },
-    x: { label: "↑ Growth rate (%)", grid: true },
-    y: { label: "Density" },
+    width: $("growth-chart").clientWidth,
+    height: 340,
+    style: { background: "transparent", color: "#c8c8d4", fontSize: "13px" },
+    marginLeft: 55,
+    x: { label: "Growth rate (%)", grid: true },
+    y: { label: "Density", ticks: [] },
     color: { legend: true, label: "Era" },
     marks: [
-      Plot.density(growthData, {x: "growth", stroke: "era", strokeWidth: 2.5, fill: "era", fillOpacity: 0.15}),
+      Plot.density(growthData, { x: "growth", stroke: "era", strokeWidth: 2.5, fill: "era", fillOpacity: 0.1 }),
+      Plot.ruleX([growthData.reduce((s, d) => s + d.growth, 0) / growthData.length], { stroke: "#ffffff44", strokeDasharray: "4,4" }),
     ]
   })
 );
