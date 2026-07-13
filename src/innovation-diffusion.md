@@ -121,7 +121,7 @@ const ctx=cvs.getContext("2d"),grad=ctx.createRadialGradient(16,16,0,16,16,16);
 grad.addColorStop(0,"rgba(255,255,255,1)");grad.addColorStop(.3,"rgba(255,255,255,.8)");grad.addColorStop(.7,"rgba(255,255,255,.1)");grad.addColorStop(1,"rgba(255,255,255,0)");
 ctx.fillStyle=grad;ctx.fillRect(0,0,32,32);
 
-const pts=new THREE.Points(ptGeom,new THREE.PointsMaterial({size:.055,map:new THREE.CanvasTexture(cvs),vertexColors:true,blending:THREE.NormalBlending,depthWrite:false,transparent:true,opacity:.95}));
+const pts=new THREE.Points(ptGeom,new THREE.PointsMaterial({size:.06,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
 scene.add(pts);
 
 // ── State ──
