@@ -3,6 +3,7 @@ export default {
   title: "Convergence Engine — H Heuristics",
   pages: [
     { name: "Home", path: "/" },
+    { name: "Clean Industry Sim", path: "/clean-industry-sim" },
     { name: "3D Surface", path: "/convergence-surface" },
     { name: "Map View", path: "/convergence-map" },
     { name: "Regression", path: "/regression-panel" },
