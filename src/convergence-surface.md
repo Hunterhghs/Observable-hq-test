@@ -19,7 +19,6 @@ toc: false
 
 ```js
 import * as THREE from "npm:three";
-import { OrbitControls } from "npm:three/examples/jsm/controls/OrbitControls.js";
 const data = await FileAttachment("./data/convergence.json").json();
 
 const container = document.getElementById("surface-container");
@@ -45,13 +44,15 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 container.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.06;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.25;
-controls.target.set(1.5, -0.5, 2);
-controls.maxPolarAngle = Math.PI * 0.7;
+container.style.cursor = "grab";
+
+// Manual rotation (no OrbitControls)
+let rotX = 0.5, rotY = -0.6, autoRotate = true, isDragging = false, lastX = 0, lastY = 0;
+const target = new THREE.Vector3(1.5, -0.5, 2);
+container.addEventListener("mousedown", e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; container.style.cursor = "grabbing"; });
+window.addEventListener("mouseup", () => { isDragging = false; container.style.cursor = "grab"; });
+window.addEventListener("mousemove", e => { if (!isDragging) return; rotY += (e.clientX - lastX) * 0.005; rotX += (e.clientY - lastY) * 0.005; rotX = Math.max(-1.4, Math.min(1.4, rotX)); lastX = e.clientX; lastY = e.clientY; });
+container.addEventListener("wheel", e => { e.preventDefault(); camera.position.sub(target).multiplyScalar(1 + e.deltaY * 0.001).add(target); camera.position.clampLength(3, 25); }, { passive: false });
 
 // ── Lighting ──
 scene.add(new THREE.AmbientLight(0x1a1a40, 1.5));
@@ -190,11 +191,14 @@ document.getElementById("height-legend").innerHTML = `
   </div>`;
 
 // ── Animate ──
-const clock = new THREE.Clock();
 (function animate() {
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.1);
-  controls.update();
+  if (autoRotate && !isDragging) rotY += 0.003;
+  const r = camera.position.distanceTo(target);
+  camera.position.x = target.x + r * Math.sin(rotY) * Math.cos(rotX);
+  camera.position.y = target.y + r * Math.sin(rotX);
+  camera.position.z = target.z + r * Math.cos(rotY) * Math.cos(rotX);
+  camera.lookAt(target);
   renderer.render(scene, camera);
 })();
 ```

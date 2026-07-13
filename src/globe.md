@@ -56,7 +56,6 @@ toc: false
 
 ```js
 import * as THREE from "npm:three";
-import { OrbitControls } from "npm:three/examples/jsm/controls/OrbitControls.js";
 const data = await FileAttachment("./data/convergence.json").json();
 const $ = id => document.getElementById(id);
 
@@ -96,14 +95,15 @@ renderer.setSize(W, H);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.25;
-controls.minDistance = 3.5;
-controls.maxDistance = 14;
-controls.target.set(0, 0, 0);
+container.style.cursor = "grab";
+
+// Manual rotation (no OrbitControls)
+let rotX = 0.3, rotY = 0, autoRotate = true, isDragging = false, lastX = 0, lastY = 0;
+const baseDist = 8;
+container.addEventListener("mousedown", e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; container.style.cursor = "grabbing"; });
+window.addEventListener("mouseup", () => { isDragging = false; container.style.cursor = "grab"; });
+window.addEventListener("mousemove", e => { if (!isDragging) return; rotY += (e.clientX - lastX) * 0.005; rotX += (e.clientY - lastY) * 0.005; rotX = Math.max(-1.4, Math.min(1.4, rotX)); lastX = e.clientX; lastY = e.clientY; });
+container.addEventListener("wheel", e => { e.preventDefault(); camera.position.multiplyScalar(1 + e.deltaY * 0.001); camera.position.clampLength(3.5, 14); }, { passive: false });
 
 // ── Lighting ──
 scene.add(new THREE.AmbientLight(0x8899cc, 2.8));
@@ -262,7 +262,12 @@ $("globe-kpi").innerHTML = [
 // ── Animate ──
 (function animate() {
   requestAnimationFrame(animate);
-  controls.update();
+  if (autoRotate && !isDragging) rotY += 0.004;
+  const r = camera.position.length();
+  camera.position.x = r * Math.sin(rotY) * Math.cos(rotX);
+  camera.position.y = r * Math.sin(rotX);
+  camera.position.z = r * Math.cos(rotY) * Math.cos(rotX);
+  camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
 })();
 ```
