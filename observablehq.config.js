@@ -3,6 +3,7 @@ export default {
   title: "Convergence Engine — H Heuristics",
   pages: [
     { name: "Home", path: "/" },
+    { name: "NC Atlas", path: "/nc-atlas" },
     { name: "Clean Industry Sim", path: "/clean-industry-sim" },
     { name: "3D Globe", path: "/globe" },
     { name: "3D Surface", path: "/convergence-surface" },
