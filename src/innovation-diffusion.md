@@ -56,7 +56,6 @@ toc: false
 
 ```js
 import * as THREE from "npm:three";
-import * as Plot from "npm:@observablehq/plot";
 const $ = id => document.getElementById(id);
 
 // ── Bass Diffusion Model ──
@@ -207,16 +206,29 @@ function updateStats(){
     return `<div style="margin-bottom:.2rem;"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.1rem;"><span>${s.n}</span><span style="font-weight:700;">${share.toFixed(0)}%</span></div><div style="height:4px;background:#f3f4f6;border-radius:2px;"><div style="width:${share.toFixed(0)}%;height:100%;background:${s.c};border-radius:2px;"></div></div></div>`;
   }).join("");
 
-  // Adoption curve
-  const aDiv=$("adoption-chart");aDiv.innerHTML="";
+  // Adoption curve — simple HTML line
   const curveData=[];
   for(let y=0;y<YEARS;y++){curveData.push({year:1995+y,adopted:events.filter(e=>y>=e.adoptYear).length/N*100});}
-  aDiv.appendChild(Plot.plot({width:aDiv.clientWidth,height:180,style:{background:"transparent",color:"#374151",fontSize:"11px"},marginLeft:45,marginRight:10,marginTop:5,marginBottom:30,x:{label:null,grid:true},y:{label:"% Adopted",grid:true},marks:[Plot.areaY(curveData,{x:"year",y:"adopted",fill:"#4269d0",fillOpacity:.1}),Plot.line(curveData,{x:"year",y:"adopted",stroke:"#4269d0",strokeWidth:2.5}),Plot.ruleX([1995+yr],{stroke:"#dc3545",strokeOpacity:.6,strokeWidth:2}),Plot.dot([curveData[yr]],{x:"year",y:"adopted",fill:"#dc3545",r:4}),Plot.text([{x:2035,y:2.5}],{x:"x",y:"y",text:"Innovators",fill:"#9ca3af",fontSize:9,textAnchor:"end"}),Plot.text([{x:2035,y:16}],{x:"x",y:"y",text:"Early Adopters",fill:"#9ca3af",fontSize:9,textAnchor:"end"}),Plot.text([{x:2035,y:50}],{x:"x",y:"y",text:"Early Majority",fill:"#9ca3af",fontSize:9,textAnchor:"end"}),Plot.text([{x:2035,y:84}],{x:"x",y:"y",text:"Late Majority",fill:"#9ca3af",fontSize:9,textAnchor:"end"}),]}));
+  const aDiv=$("adoption-chart");aDiv.innerHTML="";
+  const maxA=Math.max(...curveData.map(d=>d.adopted));
+  const svgH=140,svgW=aDiv.clientWidth-20;
+  const pts=curveData.map((d,i)=>`${(i/(YEARS-1))*svgW},${svgH-(d.adopted/maxA)*svgH}`).join(" ");
+  const yrX=(yr/(YEARS-1))*svgW;
+  aDiv.innerHTML=`<svg width="${svgW}" height="${svgH+30}" style="overflow:visible;">
+    <polyline points="${pts}" fill="none" stroke="#4269d0" stroke-width="2.5"/>
+    <line x1="${yrX}" y1="0" x2="${yrX}" y2="${svgH}" stroke="#dc3545" stroke-width="2" stroke-dasharray="4,3" opacity="0.6"/>
+    <circle cx="${yrX}" cy="${svgH-(curveData[yr].adopted/maxA)*svgH}" r="4" fill="#dc3545"/>
+    <text x="${svgW}" y="12" fill="#9ca3af" font-size="9" text-anchor="end">Innovators</text>
+    <text x="${svgW}" y="${svgH*.84}" fill="#9ca3af" font-size="9" text-anchor="end">Early Adopters</text>
+    <text x="${svgW}" y="${svgH*.5}" fill="#9ca3af" font-size="9" text-anchor="end">Early Majority</text>
+    <text x="${svgW}" y="${svgH*.32}" fill="#9ca3af" font-size="9" text-anchor="end">Late Maj.</text>
+    <text x="${svgW}" y="${svgH*.16}" fill="#9ca3af" font-size="9" text-anchor="end">Laggards</text>
+  </svg>`;
 
-  // Region chart
+  // Region chart — simple HTML bars
   const rDiv=$("region-chart");rDiv.innerHTML="";
-  const regionData=regions.map((r,i)=>({region:r.n,adopted:regionCounts[i]||0}));
-  rDiv.appendChild(Plot.plot({width:rDiv.clientWidth,height:180,style:{background:"transparent",color:"#374151",fontSize:"11px"},marginLeft:90,marginRight:10,x:{label:"Adopted",grid:true},y:{label:null},color:{legend:false},marks:[Plot.barX(regionData,{x:"adopted",y:"region",fill:"#4269d0",fillOpacity:.8,sort:{y:"x",reverse:true}}),]}));
+  const maxR=Math.max(...Object.values(regionCounts),1);
+  regions.forEach((r,i)=>{const v=regionCounts[i]||0,pct=v/maxR*100;rDiv.innerHTML+=`<div style="margin-bottom:6px;"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:2px;"><span>${r.n}</span><span style="font-weight:700;color:#4269d0;">${v.toLocaleString()}</span></div><div style="height:6px;background:#f3f4f6;border-radius:3px;"><div style="width:${pct}%;height:100%;background:#4269d0;border-radius:3px;"></div></div></div>`;});
 
   // Top impact
   const top=adopted.sort((a,b)=>b.impact-a.impact).slice(0,5);
