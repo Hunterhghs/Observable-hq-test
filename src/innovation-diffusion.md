@@ -26,10 +26,10 @@ toc: false
   <span style="width:1px;height:22px;background:#e5e7eb;margin:0 0.25rem;"></span>
   <button id="btn-play-d">▶ Play</button>
   <span style="font-weight:700;color:#1a1a2e;font-size:0.85rem;">Year:</span>
-  <input type="range" id="year-slider-d" min="0" max="30" value="5" step="1">
-  <span id="year-disp">2000</span>
+  <input type="range" id="year-slider-d" min="0" max="30" value="0" step="1">
+  <span id="year-disp">1995</span>
   <span style="font-size:0.75rem;color:#6b7280;">Phase:</span>
-  <span id="phase-label" style="font-weight:700;color:#4269d0;">Early Adopters</span>
+  <span id="phase-label" style="font-weight:700;color:#4269d0;">Innovators</span>
 </div>
 
 <div class="grid grid-cols-5" style="margin-bottom:0.75rem;" id="diff-stats"></div>
@@ -70,7 +70,7 @@ for(let i=0;i<N;i++){
   const s=sectors[si],r=regions[ri];
   events.push({
     id:i,sector:si,region:ri,color:s.c,
-    adoptYear:5+rnd()*25,
+    adoptYear:rnd()*25,
     impact:10**(1+rnd()*2.5),
     x0:Math.max(.02,Math.min(.98,s.cx+gauss()*.12)),
     y0:Math.max(.02,Math.min(.98,r.y+gauss()*.06)),
@@ -121,11 +121,11 @@ const ctx=cvs.getContext("2d"),grad=ctx.createRadialGradient(16,16,0,16,16,16);
 grad.addColorStop(0,"rgba(255,255,255,1)");grad.addColorStop(.3,"rgba(255,255,255,.8)");grad.addColorStop(.7,"rgba(255,255,255,.1)");grad.addColorStop(1,"rgba(255,255,255,0)");
 ctx.fillStyle=grad;ctx.fillRect(0,0,32,32);
 
-const pts=new THREE.Points(ptGeom,new THREE.PointsMaterial({size:.04,map:new THREE.CanvasTexture(cvs),vertexColors:true,blending:THREE.NormalBlending,depthWrite:false,transparent:true,opacity:.9}));
+const pts=new THREE.Points(ptGeom,new THREE.PointsMaterial({size:.055,map:new THREE.CanvasTexture(cvs),vertexColors:true,blending:THREE.NormalBlending,depthWrite:false,transparent:true,opacity:.95}));
 scene.add(pts);
 
 // ── State ──
-let yr=5,playing=false,speed=1,timer=null;
+let yr=0,playing=false,speed=1,timer=null;
 
 function renderFrame(){
   // Update all particle positions for current year
@@ -140,7 +140,7 @@ function renderFrame(){
       ptPos[i*3+1]=Math.max(.02,Math.min(.98,e.y0+gauss()*.002*age));
       ptPos[i*3+2]=Math.max(.05,Math.min(.95,e.z0+age*.008));
       const bc=new THREE.Color(e.color);
-      bc.multiplyScalar(.3+.7*Math.min(1,age*.15));
+      bc.multiplyScalar(.4+.6*Math.min(1,age*.12));
       ptCol[i*3]=bc.r;ptCol[i*3+1]=bc.g;ptCol[i*3+2]=bc.b;
     }
   }
