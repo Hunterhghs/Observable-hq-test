@@ -3,6 +3,7 @@ export default {
   title: "Convergence Engine — H Heuristics",
   pages: [
     { name: "Home", path: "/" },
+    { name: "US 3D Map", path: "/us-3d-map" },
     { name: "US Terrain", path: "/us-terrain" },
     { name: "Innovation Diffusion", path: "/innovation-diffusion" },
     { name: "NC Topology", path: "/nc-topology" },
