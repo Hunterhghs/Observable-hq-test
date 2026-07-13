@@ -1,0 +1,18 @@
+{
+  "name": "convergence-engine",
+  "version": "1.0.0",
+  "description": "Advanced Economic Convergence Engine — H Heuristics × Observable Pro",
+  "type": "module",
+  "scripts": {
+    "dev": "observable preview",
+    "build": "observable build"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.13.4",
+    "three": "^0.170.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.1": true
+  }
+}
