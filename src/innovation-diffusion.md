@@ -144,7 +144,7 @@ const points=new THREE.Points(ptGeom,new THREE.PointsMaterial({size:.04,map:new 
 scene.add(points);
 
 // ── State ──
-let yr=0,playing=false,speed=1,timer=null;
+let yr=5,playing=false,speed=1,timer=null;
 
 function updatePoints(){
   let visible=0;
