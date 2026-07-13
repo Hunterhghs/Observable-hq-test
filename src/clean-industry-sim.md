@@ -4,26 +4,26 @@ toc: false
 ---
 
 <style>
-  #sim-controls { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #0d0d18; border-radius: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
-  #sim-controls button { background: #1a1a2e; border: 1px solid #2a2a4e; color: #c8c8d4; padding: 0.5rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-family: inherit; transition: all 0.15s; }
-  #sim-controls button:hover { background: #2a2a4e; border-color: #72d2c0; }
-  #sim-controls button.active { background: #1a3a3a; border-color: #72d2c0; color: #72d2c0; }
-  #sim-controls button.playing { background: #3a1a1a; border-color: #ff6b6b; color: #ff6b6b; }
-  #year-display { font-size: 3rem; font-weight: 900; color: #72d2c0; font-variant-numeric: tabular-nums; min-width: 120px; text-align: center; }
-  #sim-controls input[type=range] { -webkit-appearance: none; height: 6px; background: #2a2a4e; border-radius: 3px; flex: 1; min-width: 200px; }
-  #sim-controls input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #72d2c0; border-radius: 50%; cursor: pointer; }
-  .bar-race-row { display: flex; align-items: center; margin-bottom: 2px; transition: all 0.3s ease; }
-  .bar-race-label { width: 130px; text-align: right; padding-right: 0.8rem; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bar-race-track { flex: 1; height: 28px; background: #0d0d18; border-radius: 4px; overflow: hidden; position: relative; }
-  .bar-race-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease, background 0.3s ease; display: flex; align-items: center; padding-left: 0.6rem; font-size: 0.8rem; font-weight: 700; color: #000; }
-  .bar-race-value { width: 80px; padding-left: 0.8rem; font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #sim-controls { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 1rem; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  #sim-controls button { background: #fff; border: 1px solid #d1d5db; color: #374151; padding: 0.5rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: all 0.15s; font-weight: 600; }
+  #sim-controls button:hover { border-color: #4269d0; color: #4269d0; background: #f0f4ff; }
+  #sim-controls button.active { background: #e8edf8; border-color: #4269d0; color: #4269d0; }
+  #sim-controls button.playing { background: #fef2f2; border-color: #dc3545; color: #dc3545; }
+  #year-display { font-size: 2.8rem; font-weight: 900; color: #4269d0; font-variant-numeric: tabular-nums; min-width: 110px; text-align: center; }
+  #sim-controls input[type=range] { -webkit-appearance: none; height: 6px; background: #e5e7eb; border-radius: 3px; flex: 1; min-width: 200px; }
+  #sim-controls input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #4269d0; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+  .bar-race-row { display: flex; align-items: center; margin-bottom: 1px; transition: all 0.3s ease; }
+  .bar-race-label { width: 130px; text-align: right; padding-right: 0.8rem; font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #374151; }
+  .bar-race-track { flex: 1; height: 26px; background: #f3f4f6; border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-race-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease, background 0.3s ease; display: flex; align-items: center; padding-left: 0.5rem; font-size: 0.75rem; font-weight: 700; color: #fff; }
+  .bar-race-value { width: 70px; padding-left: 0.6rem; font-size: 0.85rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #374151; }
   .metric-big { font-size: 2rem; font-weight: 800; }
-  .scenario-tabs { display: flex; gap: 0.5rem; }
-  .scenario-tab { padding: 0.4rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; border: 1px solid #2a2a4e; background: #12121a; color: #888; transition: all 0.2s; }
-  .scenario-tab:hover { border-color: #666; color: #ccc; }
-  .scenario-tab.sel-baseline { background: #1a1a2e; border-color: #8888aa; color: #aaaacc; }
-  .scenario-tab.sel-green { background: #1a2e2a; border-color: #72d2c0; color: #72d2c0; }
-  .scenario-tab.sel-fossil { background: #2e1a1a; border-color: #ff6b6b; color: #ff6b6b; }
+  .scenario-tabs { display: flex; gap: 0.4rem; }
+  .scenario-tab { padding: 0.35rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; border: 1px solid #d1d5db; background: #fff; color: #6b7280; transition: all 0.2s; }
+  .scenario-tab:hover { border-color: #9ca3af; color: #374151; }
+  .scenario-tab.sel-baseline { background: #f3f4f6; border-color: #6b7280; color: #374151; }
+  .scenario-tab.sel-green { background: #ecfdf5; border-color: #10b981; color: #059669; }
+  .scenario-tab.sel-fossil { background: #fef2f2; border-color: #dc3545; color: #dc2626; }
 </style>
 
 <div class="page-hero">
@@ -129,7 +129,7 @@ function renderBarRace() {
     row.className = "bar-race-row";
     const widthPct = (c.pct / maxPct) * 100;
     const hue = 160 - c.pct * 120;
-    const color = `hsl(${Math.max(0, hue)}, 70%, ${35 + c.pct * 30}%)`;
+    const color = `hsl(${Math.max(0, hue)}, 65%, ${50 + c.pct * 20}%)`;
     row.innerHTML = `
       <div class="bar-race-label">${c.name}</div>
       <div class="bar-race-track">
@@ -147,15 +147,15 @@ function renderBarRace() {
     Plot.plot({
       width: trajDiv.clientWidth,
       height: 200,
-      style: { background: "transparent", color: "#c8c8d4", fontSize: "11px" },
+      style: { background: "transparent", color: "#374151", fontSize: "11px" },
       marginLeft: 45, marginRight: 10, marginTop: 5, marginBottom: 30,
       x: { label: null, grid: true },
       y: { label: "% Clean", grid: true },
       marks: [
         Plot.areaY(trajData, { x: "year", y: "clean", fill: scenarioColors[scenario], fillOpacity: 0.15 }),
         Plot.line(trajData, { x: "year", y: "clean", stroke: scenarioColors[scenario], strokeWidth: 2.5 }),
-        Plot.ruleX([data.years[yearIdx]], { stroke: "#fff", strokeOpacity: 0.5, strokeWidth: 2 }),
-        Plot.dot([trajData[yearIdx]], { x: "year", y: "clean", fill: "#fff", r: 5 }),
+        Plot.ruleX([data.years[yearIdx]], { stroke: "#374151", strokeOpacity: 0.3, strokeWidth: 2 }),
+        Plot.dot([trajData[yearIdx]], { x: "year", y: "clean", fill: "#4269d0", r: 5 }),,
       ]
     })
   );
@@ -182,7 +182,7 @@ function renderCharts() {
     Plot.plot({
       width: eDiv.clientWidth,
       height: 220,
-      style: { background: "transparent", color: "#c8c8d4", fontSize: "11px" },
+      style: { background: "transparent", color: "#374151", fontSize: "11px" },
       marginLeft: 80, marginRight: 10,
       x: { label: null, percent: true },
       y: { label: null },
@@ -201,7 +201,7 @@ function renderCharts() {
     Plot.plot({
       width: jDiv.clientWidth,
       height: 220,
-      style: { background: "transparent", color: "#c8c8d4", fontSize: "11px" },
+      style: { background: "transparent", color: "#374151", fontSize: "11px" },
       marginLeft: 80, marginRight: 10,
       x: { label: "Jobs (millions)", grid: true },
       y: { label: null },
@@ -219,7 +219,7 @@ function renderCharts() {
     Plot.plot({
       width: emDiv.clientWidth,
       height: 220,
-      style: { background: "transparent", color: "#c8c8d4", fontSize: "11px" },
+      style: { background: "transparent", color: "#374151", fontSize: "11px" },
       marginLeft: 50, marginBottom: 35,
       x: { label: "GDP ($T)", grid: true },
       y: { label: "Emissions (Mt CO₂)", grid: true },
